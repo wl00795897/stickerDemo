@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.stickerChat{
+    width: 320px;
+    aspect-ratio: square;
+}
+
+.connection{
+    justify-items: center;
+    background-color: antiquewhite;
+    text-align: center;
+}
+
+.messageContent{
+    background-color: aquamarine;
+    width: fit-content;
+    border-top-right-radius: 1rem; /* 8px */
+    border-bottom-right-radius: 1rem; /* 8px */
+    border-bottom-left-radius: 1rem; /* 8px */
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.nameDisplay{
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+}
