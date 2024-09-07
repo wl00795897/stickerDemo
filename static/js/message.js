@@ -1,12 +1,26 @@
 let socketio = io();
 
 const messages = document.getElementById("messages");
+const header = document.getElementById("header");
+const userName = header.getAttribute('userName');
 
 const createMessage = (name, msg, type) => {
+    console.log(userName);
     if(type === "connection"){
         const content = `
         <div class="connection">
-            ${name} enter the room @ ${new Date().toLocaleString()}
+            ${name} ${msg} @ ${new Date().toLocaleString()}
+        </div>
+        `;
+        messages.innerHTML += content;
+    }
+    else if(name === userName){
+        const content = `
+        <div class="ownNameDisplay">
+            <strong>${name}</strong>
+        </div>
+        <div class="ownMessageContent">
+            <p>${msg}</p>
         </div>
         `;
         messages.innerHTML += content;
@@ -26,13 +40,25 @@ const createMessage = (name, msg, type) => {
 
 const createImage = (name, imageEncoded) => {
     image = imageEncoded.data
-    const content = `
-    <div class="nameDisplay">
-        <strong>${name}</strong> sent a sticker
-    </div>
-    <img src="data:image/jpeg;base64,${image}" class="stickerChat"/>
-    `;
-    messages.innerHTML += content;
+    if (name === userName){
+        const content = `
+        <div class="ownNameDisplay">
+            <strong>${name}</strong> sent a sticker
+        </div>
+        <img src="data:image/jpeg;base64,${image}" class="ownStickerChat"/>
+        `;
+        messages.innerHTML += content;
+    }else{
+        const content = `
+        <div class="nameDisplay">
+            <strong>${name}</strong> sent a sticker
+        </div>
+        <img src="data:image/jpeg;base64,${image}" class="stickerChat"/>
+        `;
+        messages.innerHTML += content;
+    }
+
+
   };
 
 socketio.on("message", (data) => {
