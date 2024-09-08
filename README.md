@@ -3,11 +3,15 @@
 ## Environment set up
 
 ### Frontend
+**If not install node.js yet, please install node.js first. **
+
+Link: https://nodejs.org/en/download/package-manager
 
 ```
 npm install
 ```
-We only use Tailwind css for faster edit of css
+We only use Tailwind css for faster edit of css.
+
 Docs: https://tailwindcss.com/docs/installation
 
 ### Backend
