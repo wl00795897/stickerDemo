@@ -3,7 +3,7 @@
 ## Environment set up
 
 ### Frontend
-**If not install node.js yet, please install node.js first. **
+**If not install node.js yet, please install node.js first.**
 
 Link: https://nodejs.org/en/download/package-manager
 
