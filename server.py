@@ -9,13 +9,23 @@ from PIL import Image, ImageFont, ImageDraw
 from diffusers import StableDiffusionXLPipeline, AutoencoderKL
 import os
 import torch
+from transformers import pipeline
+from pprint import pprint
 
 
 app = Flask(__name__)
 CORS(app)
 app.config["SECRET_KEY"] = "secret"
 socketio = SocketIO(app)
-
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", device=0)
+vae = AutoencoderKL.from_pretrained("madebyollin/sdxl-vae-fp16-fix").to(torch.float16)
+loras = [
+    {"name": "otter", "checkpoint": "checkpoint-3000/pytorch_lora_weights.safetensors"},
+    {"name": "tiger", "checkpoint": "checkpoint-1200/pytorch_lora_weights.safetensors"},
+    {"name": "rabbit", "checkpoint": "pytorch_lora_weights.safetensors"},
+    {"name": "pig", "checkpoint": "pytorch_lora_weights.safetensors"}
+]
+candidate_labels = ['Happy', 'Sad', 'Angry', 'Unpleasant', 'Tired', 'Greeting', 'Sleep']
 rooms = {}
 
 def generate_unique_code(length):
@@ -72,24 +82,32 @@ def room():
 
     return render_template("room.html", code=room, name=name, messages=rooms[room]["messages"])
 
-@app.route("/api/getStickers", methods=["POST", "GET"])
+@app.route("/api/getStickers", methods=["POST"])
 def getStickers():
     if request.method == "POST":
         data = request.get_json()
+        pfc = data.get("input")
+        if len(pfc.split()) == 1:
+            prompt_word = pfc
+        else:
+            result = classifier(pfc, candidate_labels)
+            prompt_word = result['labels'][0]
         # prompt_animal = "otter"
-        prompt_word = data.get("input")
+        # result = classifier(data.get("input"), candidate_labels)
+        # prompt_word = result['labels'][0]
         print(f"Received input from client: {prompt_word}")
-        vae = AutoencoderKL.from_pretrained(
-        "madebyollin/sdxl-vae-fp16-fix"
-        ).to(torch.float16)
-        loras = [
-            {"name": "otter", "checkpoint": "checkpoint-3000/pytorch_lora_weights.safetensors"},
-            {"name": "tiger", "checkpoint": "checkpoint-1200/pytorch_lora_weights.safetensors"},
-            {"name": "rabbit", "checkpoint": "pytorch_lora_weights.safetensors"},
-            {"name": "pig", "checkpoint": "pytorch_lora_weights.safetensors"}
-        ]
+        # vae = AutoencoderKL.from_pretrained(
+        # "madebyollin/sdxl-vae-fp16-fix"
+        # ).to(torch.float16)
+        # loras = [
+        #     {"name": "otter", "checkpoint": "checkpoint-3000/pytorch_lora_weights.safetensors"},
+        #     {"name": "tiger", "checkpoint": "checkpoint-1200/pytorch_lora_weights.safetensors"},
+        #     {"name": "rabbit", "checkpoint": "pytorch_lora_weights.safetensors"},
+        #     {"name": "pig", "checkpoint": "pytorch_lora_weights.safetensors"}
+        # ]
         for i in range (4):
             pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
+            pipeline.enable_xformers_memory_efficient_attention()
             selected_loras = random.sample(loras, k=2)
             lora = []
             for selected_lora in selected_loras:

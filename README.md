@@ -50,6 +50,14 @@ pip install -U "huggingface_hub[cli]"
 ```
 pip install flask flask-socketio flask-cors
 ```
+#### (Optional) Windows-build triton
+For running zero-shot classifier, one may encounter **A matching Triton is not available, some optimizations will not be enabled. Error caught was: No module named 'triton'** on Windows.
+To solve this, please run the following command:
+```
+pip install https://huggingface.co/madbuda/triton-windows-builds/resolve/main/triton-2.1.0-cp311-cp311-win_amd64.whl
+```
+Source1: https://huggingface.co/madbuda/triton-windows-builds/tree/main
+Source2: https://github.com/triton-lang/triton/issues/1057
 ## Running
 ```
 python server.py
