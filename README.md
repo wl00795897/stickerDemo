@@ -28,9 +28,10 @@ pip install xformers==0.0.23.post1 --index-url https://download.pytorch.org/whl/
 ```
 Source: https://github.com/oobabooga/text-generation-webui/issues/5705
 
-#### Install diffusers
+#### Install diffusers, transformers
 ```
 conda install -c conda-forge diffusers
+conda install conda-forge::transformers
 ```
 Also, we may encounter some problem while executing server.py, please execute the following commands also:
 ```
