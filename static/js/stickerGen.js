@@ -47,8 +47,8 @@ const stickerDisplay = () => {
     const imgElement = document.createElement("img");
     imgElement.src = `data:image/jpeg;base64,${image}`;
     imgElement.classList.add("stickerGenPhoto");
-    imgElement.style.width = "150px";
-    imgElement.style.height = "150px";
+    imgElement.style.width = "200px";
+    imgElement.style.height = "200px";
     imgElement.addEventListener("click", () => {
       sendImage(image);
     });
