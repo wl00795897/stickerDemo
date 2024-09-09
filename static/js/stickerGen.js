@@ -1,9 +1,21 @@
 const stickerInput = document.getElementById("sticker-input");
 const ideaButton = document.getElementById("idea-btn");
 const stickerContainer = document.getElementById("sticker-container");
+const stickerWindow = document.getElementById("stickerWindow");
+// const stickerWindowButton = document.getElementById("open-window");
 
 let prompt = "";
 let array = [];
+
+const stickerWindowCtl = () => {
+  if (stickerWindow.style.display === 'none') {
+    console.log("clicked 1");
+    stickerWindow.style.display = 'block'; // Show
+  } else {
+    console.log("clicked 2");
+    stickerWindow.style.display = 'none'; // Hide
+  }
+};
 
 const sendInput = async () => {
   try {
@@ -35,6 +47,8 @@ const stickerDisplay = () => {
     const imgElement = document.createElement("img");
     imgElement.src = `data:image/jpeg;base64,${image}`;
     imgElement.classList.add("stickerGenPhoto");
+    imgElement.style.width = "150px";
+    imgElement.style.height = "150px";
     imgElement.addEventListener("click", () => {
       sendImage(image);
     });
@@ -47,3 +61,6 @@ stickerInput.addEventListener("input", (e) => {
 });
 
 ideaButton.addEventListener("click", sendInput);
+
+// stickerWindowButton.addEventListener("click", stickerWindowCtl);
+

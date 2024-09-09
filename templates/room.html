@@ -11,26 +11,24 @@
     ></script>
   </head>
   <body>
-    <div class="bg-[#a7bcff] h-screen w-auto flex items-center justify-center gap-10">
-      <div class="bg-white text-3xl h-5/6 w-3/5 flex flex-col rounded-2xl shadow-lg overflow-hidden">
+    <div class="bg-[#a7bcff] h-screen w-auto flex flex-col items-center justify-center">
+      <div class="bg-white text-3xl h-full w-3/5 flex flex-col rounded-2xl shadow-lg overflow-hidden my-2">
         <div class="bg-[#5d5b8d] flex justify-between gap-3" id="header" userName="{{name}}">
             <p class="p-5 text-white">ChatRoom Code: {{code}}</p>
         </div>
         <div class="h-full p-5 overflow-y-scroll flex flex-col" id="messages"></div>
         <div class="flex justify-between gap-3 p-5 bg-[#ddddf7]">
           <input class="rounded-lg w-full placeholder-gray-300 placeholder:text-2xl pl-2" type="text" placeholder="Message" name="message" id="message"/>
+          <button type="button" onClick="stickerWindowCtl()" class="py-2.5 px-5 bg-[#8da4f1] rounded-lg text-white text-lg hover:bg-[#5d5b8d] transition-colors">Sticker</button>
           <button type="button" name="send" id="send-btn" onClick="sendMessage()" class="py-2.5 px-5 bg-[#8da4f1] rounded-lg text-white text-lg hover:bg-[#5d5b8d] transition-colors">Send</button>
         </div>
       </div>
-      <div class="bg-white text-3xl h-5/6 w-1/3 flex flex-col rounded-2xl shadow-lg overflow-hidden">
-        <div class="bg-[#5d5b8d] flex justify-between gap-3">
-          <p class="p-5 text-white">Sticker Generator</p>
-        </div>
-        <div class="p-5 bg-[#ddddf7] w-full flex justify-between gap-3 ">
+      <div class="bg-white text-3xl h-[45%] w-3/5 flex flex-col rounded-2xl shadow-lg overflow-hidden mb-2" id="stickerWindow" style="display: none;">
+        <div class="p-5 bg-[#ddddf7] w-full flex justify-between gap-3">
           <input id="sticker-input" class="rounded-lg w-full placeholder-gray-300 placeholder:text-2xl placeholder:italic placeholder:px-2 placeholder:align-baseline pl-2" placeholder="Type something"/>
           <button id="idea-btn" class="py-2.5 px-5 bg-[#8da4f1] rounded-lg text-white text-lg hover:bg-[#5d5b8d] transition-colors">Idea</button>
         </div>
-        <div id="sticker-container" class="p-5 overflow-y-scroll flex flex-col gap-2"></div>
+        <div id="sticker-container" class="p-5 flex overflow-x-scroll gap-2 justify-center"></div>
       </div>
     </div>
     <script src="{{ url_for('static', filename='js/stickerGen.js') }}"></script>

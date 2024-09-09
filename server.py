@@ -17,7 +17,11 @@ app = Flask(__name__)
 CORS(app)
 app.config["SECRET_KEY"] = "secret"
 socketio = SocketIO(app)
-classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", device=0)
+rooms = {}
+# For CUDA
+# classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", device=0)
+# For MacOS
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 vae = AutoencoderKL.from_pretrained("madebyollin/sdxl-vae-fp16-fix").to(torch.float16)
 loras = [
     {"name": "otter", "checkpoint": "checkpoint-3000/pytorch_lora_weights.safetensors"},
@@ -26,7 +30,6 @@ loras = [
     {"name": "pig", "checkpoint": "pytorch_lora_weights.safetensors"}
 ]
 candidate_labels = ['Happy', 'Sad', 'Angry', 'Unpleasant', 'Tired', 'Greeting', 'Sleep']
-rooms = {}
 
 def generate_unique_code(length):
     while True:
@@ -106,8 +109,9 @@ def getStickers():
         #     {"name": "pig", "checkpoint": "pytorch_lora_weights.safetensors"}
         # ]
         for i in range (4):
-            pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
-            pipeline.enable_xformers_memory_efficient_attention()
+            # pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
+            # pipeline.enable_xformers_memory_efficient_attention()
+            pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("mps")
             selected_loras = random.sample(loras, k=2)
             lora = []
             for selected_lora in selected_loras:
@@ -133,19 +137,19 @@ def getStickers():
             prompt = default_prompt + ", " + prompt_animal + ", " + prompt_word
             negative_prompt = "alphabet, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, artist name,(deformed, distorted, disfigured:1.3), poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, (mutated hands and fingers:1.4), disconnected limbs, mutation, mutated, ugly, disgusting, blurry, amputation, bad art, worst quality, worst details, poorly drawn face, fused face, cloned face, ugly eyes, ((imperfect eyes)), deformed pupils, deformed iris, extra eyes, oversized eyes, extra crus, fused crus, extra thigh, fused thigh, missing fingers, extra fingers, elongated fingers, amputation, disconnected limbs, artist signature, upside down, asymmetrical eyes"
 
-            image = pipeline(prompt = prompt,negative_prompt=negative_prompt, num_inference_steps=12, guidance_scale=1.5).images[0]
-            img_w, img_h = image.size
+            image = pipeline(prompt = prompt,negative_prompt=negative_prompt, num_inference_steps=4, guidance_scale=1.5).images[0]
+            img_w = image.size
 
 
             layer = Image.new('RGB', (640,640), (255,255,255))
-            bg_w, bg_h = layer.size
+            bg_w = layer.size
             offset = ((bg_w - img_w) // 2, bg_w - img_w)
             layer.paste(image, offset)
             # layer.save('./ok1.jpg')
-            font = ImageFont.truetype('NerkoOne-Regular.ttf', 150)   # 設定字型
-            draw = ImageDraw.Draw(layer)     # 準備在圖片上繪圖
-            draw.text((layer.size[0]//2, 32), prompt_word, anchor='mt', fill=(0, 0, 0), font=font)  # 將文字畫入圖片
-            layer.save(f"./{i + 1}.jpg")     # 儲存圖片
+            font = ImageFont.truetype('NerkoOne-Regular.ttf', 150) 
+            draw = ImageDraw.Draw(layer)     
+            draw.text((layer.size[0]//2, 32), prompt_word, anchor='mt', fill=(0, 0, 0), font=font)  
+            layer.save(f"./{i + 1}.jpg")  
 
     result = ["1.jpg", "2.jpg", "3.jpg", "4.jpg"]
     encoded_imges = []

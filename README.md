@@ -32,9 +32,9 @@ Source: https://github.com/oobabooga/text-generation-webui/issues/5705
 ```
 conda install -c conda-forge diffusers
 ```
-Also, we may encounter some problem while executing server.py, please execute the following commands first:
+Also, we may encounter some problem while executing server.py, please execute the following commands also:
 ```
-pip install --upgrade diffusers transformers accelerate scipy ftfy safetensors
+pip install --upgrade diffusers transformers accelerate safetensors
 pip install -U peft
 ```
 Source1: https://github.com/huggingface/safetensors/issues/128
