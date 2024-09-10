@@ -19,9 +19,9 @@ app.config["SECRET_KEY"] = "secret"
 socketio = SocketIO(app)
 rooms = {}
 # For CUDA
-classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", device=0)
+# classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", device=0)
 # For MacOS
-# classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 vae = AutoencoderKL.from_pretrained("madebyollin/sdxl-vae-fp16-fix").to(torch.float16)
 loras = [
     {"name": "otter", "checkpoint": "checkpoint-3000/pytorch_lora_weights.safetensors"},
@@ -109,9 +109,11 @@ def getStickers():
         #     {"name": "pig", "checkpoint": "pytorch_lora_weights.safetensors"}
         # ]
         for i in range (4):
-            pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
-            pipeline.enable_xformers_memory_efficient_attention()
-            # pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("mps")
+            # CUDA enabled
+            # pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
+            # pipeline.enable_xformers_memory_efficient_attention()
+            # MacOS
+            pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("mps")
             selected_loras = random.sample(loras, k=2)
             lora = []
             for selected_lora in selected_loras:
