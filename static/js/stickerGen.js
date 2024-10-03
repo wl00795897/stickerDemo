@@ -4,6 +4,7 @@ const stickerContainer = document.getElementById("sticker-container");
 const stickerWindow = document.getElementById("stickerWindow");
 // const stickerWindowButton = document.getElementById("open-window");
 
+
 let prompt = "";
 let array = [];
 
@@ -25,9 +26,8 @@ const sendInput = async () => {
       body: JSON.stringify({ input: prompt })
     });
     const data = await response.json();
-    console.log(data.images);
-    array = data.images;
-    stickerDisplay();
+    console.log(data.message);
+    // stickerDisplay();
   } catch (error) {
     console.error("Error sending and fetching data to server:", error);
   }
@@ -41,9 +41,9 @@ const sendImage = (image) => {
     image = "";
   };
 
-const stickerDisplay = () => {
+const stickerDisplay = (data) => {
   stickerContainer.innerHTML = "";
-  array.forEach((image, index) => {
+  data.forEach((image, index) => {
     const imgElement = document.createElement("img");
     imgElement.src = `data:image/jpeg;base64,${image}`;
     imgElement.classList.add("stickerGenPhoto");
@@ -55,6 +55,11 @@ const stickerDisplay = () => {
     stickerContainer.appendChild(imgElement);
   });
 };
+
+socketio.on('result', (data) => {
+  console.log(data)
+  stickerDisplay(data.image);
+});
 
 stickerInput.addEventListener("input", (e) => {
   prompt = e.target.value;

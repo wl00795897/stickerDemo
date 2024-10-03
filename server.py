@@ -12,6 +12,7 @@ import torch
 from transformers import pipeline
 from pprint import pprint
 import time
+import copy
 
 app = Flask(__name__)
 CORS(app)
@@ -30,6 +31,7 @@ loras = [
     {"name": "pig", "checkpoint": "checkpoint-3500/pytorch_lora_weights.safetensors"}
 ]
 candidate_labels = ['Happy', 'Sad', 'Angry', 'Tired', 'Hello', 'Congratulation', 'Thanks']
+base_pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
 
 def code_gen(length):
     code = ''.join(random.choices(string.digits, k=length))
@@ -108,10 +110,12 @@ def getStickers():
         #     {"name": "rabbit", "checkpoint": "pytorch_lora_weights.safetensors"},
         #     {"name": "pig", "checkpoint": "pytorch_lora_weights.safetensors"}
         # ]
+        encoded_images = []
         start = time.time()
         for i in range (4):
             pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
-            pipeline.enable_xformers_memory_efficient_attention()
+            # pipeline = copy.deepcopy(base_pipeline)
+            # pipeline.enable_xformers_memory_efficient_attention()
             # pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("mps")
             selected_loras = random.sample(loras, k=2)
             lora = []
@@ -135,30 +139,30 @@ def getStickers():
             # torch.compile
             # pipeline.unet.to(memory_format=torch.channels_last)
             # pipeline.unet = torch.compile(pipeline.unet, mode="reduce-overhead", fullgraph=True)
-            default_prompt = "dm-sticker, furious, pissed off"
+            default_prompt = "dm-sticker"
             prompt = default_prompt + ", " + prompt_animal + ", " + prompt_word
             negative_prompt = "blank eyes, alphabet, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, artist name,(deformed, distorted, disfigured:1.3), poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, (mutated hands and fingers:1.4), disconnected limbs, mutation, mutated, ugly, disgusting, blurry, amputation, bad art, worst quality, worst details, poorly drawn face, fused face, cloned face, ugly eyes, ((imperfect eyes)), deformed pupils, deformed iris, extra eyes, oversized eyes, extra crus, fused crus, extra thigh, fused thigh, missing fingers, extra fingers, elongated fingers, amputation, disconnected limbs, artist signature, upside down, asymmetrical eyes"
 
             image = pipeline(prompt = prompt,negative_prompt=negative_prompt, num_inference_steps=12, guidance_scale=2.0, height = 320, width = 320).images[0]
+            del pipeline
             img_w, img_h = image.size
-            print("New enabled")
-            image.save(f"./{i + 1}.jpg") 
-            # layer = Image.new('RGB', (640,640), (255,255,255))
-            # bg_w, bg_h = layer.size
-            # offset = ((bg_w - img_w) // 2, bg_w - img_w)
-            # layer.paste(image, offset)
-            # # layer.save('./ok1.jpg')
-            # font = ImageFont.truetype('NerkoOne-Regular.ttf', 150) 
-            # draw = ImageDraw.Draw(layer)     
-            # draw.text((layer.size[0]//2, 32), prompt_word, anchor='mt', fill=(0, 0, 0), font=font)  
-            # layer.save(f"./{i + 1}.jpg")  
+            layer = Image.new('RGB', (450,450), (255,255,255))
+            bg_w, bg_h = layer.size
+            offset = ((bg_w - img_w) // 2, bg_w - img_w)
+            layer.paste(image, offset)
+            # layer.save('./ok1.jpg')
+            font = ImageFont.truetype('NerkoOne-Regular.ttf', 150) 
+            draw = ImageDraw.Draw(layer)     
+            draw.text((layer.size[0]//2, 32), prompt_word, anchor='mt', fill=(31, 41, 55), font=font)  
+            layer.save(f"./{i + 1}.jpg")
+            encoded_image = get_response_image(f"./{i + 1}.jpg")
+            encoded_images.append(encoded_image)
+            socketio.emit('result', {'image': encoded_images})
+            
     end = time.time()
     print(end - start)
-    result = ["1.jpg", "2.jpg", "3.jpg", "4.jpg"]
-    encoded_imges = []
-    for image_path in result:
-        encoded_imges.append(get_response_image(image_path))
-    return jsonify({'images': encoded_imges})
+    return {'message': 'All result has been sent'}
+
 
 
 @socketio.on("message")
