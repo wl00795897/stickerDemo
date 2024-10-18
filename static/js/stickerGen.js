@@ -1,4 +1,5 @@
 const stickerInput = document.getElementById("sticker-input");
+const stickerInputAnimal = document.getElementById("sticker-input-animal");
 const ideaButton = document.getElementById("idea-btn");
 const stickerContainer = document.getElementById("sticker-container");
 const stickerWindow = document.getElementById("stickerWindow");
@@ -6,6 +7,8 @@ const stickerWindow = document.getElementById("stickerWindow");
 
 
 let prompt = "";
+
+let prompt_animal = "";
 let array = [];
 
 const stickerWindowCtl = () => {
@@ -23,7 +26,7 @@ const sendInput = async () => {
     const response = await fetch("http://localhost:5002/api/getStickers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ input: prompt })
+      body: JSON.stringify({ input: prompt , animal: prompt_animal})
     });
     const data = await response.json();
     console.log(data.message);
@@ -63,6 +66,9 @@ socketio.on('result', (data) => {
 
 stickerInput.addEventListener("input", (e) => {
   prompt = e.target.value;
+});
+stickerInputAnimal.addEventListener("input", (e) => {
+  prompt_animal = e.target.value;
 });
 
 ideaButton.addEventListener("click", sendInput);

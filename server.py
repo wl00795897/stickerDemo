@@ -30,9 +30,9 @@ loras = [
     {"name": "rabbit", "checkpoint": "checkpoint-2400/pytorch_lora_weights.safetensors"},
     {"name": "pig", "checkpoint": "checkpoint-3500/pytorch_lora_weights.safetensors"}
 ]
-candidate_labels = ['Happy', 'Sad', 'Angry', 'Tired', 'Hello', 'Congratulation', 'Thanks']
-base_pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda:1") 
-
+candidate_labels = ['Happy', 'Sad', 'Angry', 'Tired', 'Hello', 'Congrats', 'Thanks', 'Okay', 'Sleep', 'Curious']
+# base_pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda:1") 
+base_pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
 def code_gen(length):
     code = ''.join(random.choices(string.digits, k=length))
     if code not in rooms:
@@ -89,7 +89,7 @@ def getStickers():
     if request.method == "POST":
         data = request.get_json()
         pfc = data.get("input")
-        if len(pfc.split()) == 1:
+        if (len(pfc.split()) == 1):
             prompt_word = pfc
             print(f"Received input from client: {prompt_word}")
         else:
@@ -113,6 +113,8 @@ def getStickers():
         encoded_images = []
         start = time.time()
         for i in range (4):
+            if (i == 2):
+                prompt_word = data.get("input")
             # pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
             pipeline = copy.deepcopy(base_pipeline)
             # pipeline.enable_xformers_memory_efficient_attention()
@@ -127,7 +129,9 @@ def getStickers():
                 )
                 lora.append(selected_lora["name"])
             # print(((i+1) * random.randint(1, 10000)) % 2)
-            prompt_animal = lora[(random.randint(1, 10000)) % 2]
+            prompt_animal = data.get("animal")
+            if not(prompt_animal):
+                prompt_animal = lora[(random.randint(1, 10000)) % 2]
             print(f"merged lora: {lora}, prompt_animal: {prompt_animal}")
             # activate both LoRAs and set adapter weights
             pipeline.set_adapters(lora, adapter_weights=[0.5, 0.5])
@@ -147,12 +151,17 @@ def getStickers():
             img_w, img_h = image.size
             layer = Image.new('RGB', (450,450), (255,255,255))
             bg_w, bg_h = layer.size
-            offset = ((bg_w - img_w) // 2, bg_w - img_w)
-            layer.paste(image, offset)
-            # layer.save('./ok1.jpg')
-            font = ImageFont.truetype('NerkoOne-Regular.ttf', 150) 
-            draw = ImageDraw.Draw(layer)     
-            draw.text((layer.size[0]//2, 32), prompt_word, anchor='mt', fill=(31, 41, 55), font=font)  
+            if (i < 2):
+                offset = ((bg_w - img_w) // 2, bg_w - img_w)
+                layer.paste(image, offset)
+                # layer.save('./ok1.jpg')
+                font = ImageFont.truetype('NerkoOne-Regular.ttf', 100) 
+                draw = ImageDraw.Draw(layer)     
+                draw.text((layer.size[0]//2, 32), prompt_word, anchor='mt', fill=(31, 41, 55), font=font)
+
+            else:
+                offset = ((bg_w - img_w) // 2, (bg_w - img_w)//2)
+                layer.paste(image, offset)
             layer.save(f"./{i + 1}.jpg")
             encoded_image = get_response_image(f"./{i + 1}.jpg")
             encoded_images.append(encoded_image)
