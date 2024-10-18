@@ -31,7 +31,7 @@ loras = [
     {"name": "pig", "checkpoint": "checkpoint-3500/pytorch_lora_weights.safetensors"}
 ]
 candidate_labels = ['Happy', 'Sad', 'Angry', 'Tired', 'Hello', 'Congratulation', 'Thanks']
-base_pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
+base_pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda:1") 
 
 def code_gen(length):
     code = ''.join(random.choices(string.digits, k=length))
@@ -57,17 +57,17 @@ def home():
         create = request.form.get("create", False)
 
         if not name:
-            return render_template("home.html", error="Please enter a name.", code=code, name=name)
+            return render_template("home.html", error="Name is empty.", code=code, name=name)
 
         if join != False and not code:
-            return render_template("home.html", error="Please enter a room code.", code=code, name=name)
+            return render_template("home.html", error="Room code is empty.", code=code, name=name)
         
         room = code
         if create != False:
             room = code_gen(4)
             rooms[room] = {"members": 0, "messages": []}
         elif code not in rooms:
-            return render_template("home.html", error="Room does not exist.", code=code, name=name)
+            return render_template("home.html", error="Find no room.", code=code, name=name)
         
         session["room"] = room
         session["name"] = name
@@ -113,8 +113,8 @@ def getStickers():
         encoded_images = []
         start = time.time()
         for i in range (4):
-            pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
-            # pipeline = copy.deepcopy(base_pipeline)
+            # pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("cuda") 
+            pipeline = copy.deepcopy(base_pipeline)
             # pipeline.enable_xformers_memory_efficient_attention()
             # pipeline = StableDiffusionXLPipeline.from_pretrained("stabilityai/sdxl-turbo", vae=vae, torch_dtype=torch.float16).to("mps")
             selected_loras = random.sample(loras, k=2)
@@ -144,7 +144,6 @@ def getStickers():
             negative_prompt = "blank eyes, alphabet, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, artist name,(deformed, distorted, disfigured:1.3), poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, (mutated hands and fingers:1.4), disconnected limbs, mutation, mutated, ugly, disgusting, blurry, amputation, bad art, worst quality, worst details, poorly drawn face, fused face, cloned face, ugly eyes, ((imperfect eyes)), deformed pupils, deformed iris, extra eyes, oversized eyes, extra crus, fused crus, extra thigh, fused thigh, missing fingers, extra fingers, elongated fingers, amputation, disconnected limbs, artist signature, upside down, asymmetrical eyes"
 
             image = pipeline(prompt = prompt,negative_prompt=negative_prompt, num_inference_steps=12, guidance_scale=2.0, height = 320, width = 320).images[0]
-            del pipeline
             img_w, img_h = image.size
             layer = Image.new('RGB', (450,450), (255,255,255))
             bg_w, bg_h = layer.size
@@ -158,6 +157,8 @@ def getStickers():
             encoded_image = get_response_image(f"./{i + 1}.jpg")
             encoded_images.append(encoded_image)
             socketio.emit('result', {'image': encoded_images})
+            del pipeline
+            torch.cuda.empty_cache()
             
     end = time.time()
     print(end - start)

@@ -9,7 +9,7 @@ const createMessage = (name, msg, type) => {
     if(type === "connection"){
         const content = `
         <div class="connection">
-            ${name} ${msg} @ ${new Date().toLocaleString()}
+          User: ${name} ${msg}
         </div>
         `;
         messages.innerHTML += content;
